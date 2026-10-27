@@ -1,0 +1,22 @@
+{
+  "name": "rename_project",
+  "description": "Rename a project",
+  "required": ["project", "new_name"],
+  "properties": {
+    "project": {"type": "string"},
+    "new_name": {"type": "string"}
+  },
+  "trigger_patterns": [
+    "rename project (?P<project>.+?) to (?P<new_name>.+)",
+    "rename (?P<project>.+?) to (?P<new_name>.+)"
+  ],
+  "resolve": {
+    "project": {"entity": "project", "as": "project_id"}
+  },
+  "service_call": {
+    "method": "rename_project",
+    "args": {"project_id": "project_id", "new_name": "new_name"}
+  },
+  "response_template": "Renamed the project to “{new_name}”.",
+  "destructive": false
+}

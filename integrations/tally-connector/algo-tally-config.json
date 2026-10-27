@@ -1,0 +1,7 @@
+{
+  "algoAkanadeBaseUrl": "http://127.0.0.1:8000",
+  "algoAkanadeEmail": "aniruddha",
+  "algoAkanadePassword": "demo123",
+  "tallyBaseUrl": "http://localhost:9000",
+  "bridgePort": 4600
+}

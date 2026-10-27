@@ -1,0 +1,28 @@
+{
+  "name": "algo-tally-connector",
+  "version": "0.1.0",
+  "description": "A working Tally <-> Algo Akanade integration: pulls ledger/voucher data from Tally's own XML HTTP gateway and forwards it to ALGO AKANADE's chat and Train Algo AI APIs. A concrete plugin for Tally (not a generic SDK), built on @algo-akanade/connector so the same pattern generalizes to other ERP/React/React Native apps.",
+  "license": "UNLICENSED",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "bin": {
+    "algo-tally-bridge": "dist/src/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "npm run build && node --test dist/test/",
+    "start": "node dist/src/cli.js",
+    "package:linux": "npm run build && pkg dist/src/cli.js --targets node18-linux-x64 --output dist-exe/AlgoAIForTally-linux",
+    "package:win": "npm run build && pkg dist/src/cli.js --targets node18-win-x64 --output dist-exe/AlgoAIForTally-windows.exe",
+    "package:all": "npm run package:linux && npm run package:win"
+  },
+  "dependencies": {
+    "@algo-akanade/connector": "file:../algo-akanade-connector",
+    "fast-xml-parser": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@yao-pkg/pkg": "^6.14.2",
+    "typescript": "^5.4.5"
+  }
+}

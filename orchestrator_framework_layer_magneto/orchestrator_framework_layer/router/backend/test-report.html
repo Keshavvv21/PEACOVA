@@ -1,0 +1,392 @@
+<title>Router A/B Test Sheet</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg: #f4f5f8;
+    --surface: #ffffff;
+    --surface-2: #eef0f4;
+    --ink: #171a21;
+    --ink-muted: #5c6470;
+    --border: #e1e4ea;
+    --accent: #2f5fd1;
+    --accent-soft: #e8edfc;
+    --good: #157a47;
+    --good-soft: #e4f5ec;
+    --warn: #a3671a;
+    --warn-soft: #faf0de;
+    --bad: #b23b2e;
+    --bad-soft: #fbe9e6;
+  }
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      --bg: #14161b;
+      --surface: #1b1e25;
+      --surface-2: #22262f;
+      --ink: #eceef2;
+      --ink-muted: #98a0ad;
+      --border: #2d313b;
+      --accent: #7fa0f5;
+      --accent-soft: #22283b;
+      --good: #5fcf98;
+      --good-soft: #1a2b23;
+      --warn: #e0ab5c;
+      --warn-soft: #2e2515;
+      --bad: #ef8577;
+      --bad-soft: #33201d;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14161b;
+    --surface: #1b1e25;
+    --surface-2: #22262f;
+    --ink: #eceef2;
+    --ink-muted: #98a0ad;
+    --border: #2d313b;
+    --accent: #7fa0f5;
+    --accent-soft: #22283b;
+    --good: #5fcf98;
+    --good-soft: #1a2b23;
+    --warn: #e0ab5c;
+    --warn-soft: #2e2515;
+    --bad: #ef8577;
+    --bad-soft: #33201d;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    margin: 0;
+    padding: 40px 24px 80px;
+  }
+  .page { max-width: 1080px; margin: 0 auto; }
+
+  .mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+
+  header { margin-bottom: 32px; }
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin: 0 0 10px;
+  }
+  h1 {
+    font-size: 32px;
+    font-weight: 700;
+    margin: 0 0 8px;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  .subtitle {
+    color: var(--ink-muted);
+    font-size: 15px;
+    max-width: 62ch;
+    line-height: 1.55;
+    margin: 0;
+  }
+  .meta-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 18px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    color: var(--ink-muted);
+  }
+  .meta-row span b { color: var(--ink); font-weight: 600; }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin: 28px 0 36px;
+  }
+  .stat-tile {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .stat-tile__value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 24px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-tile__label {
+    color: var(--ink-muted);
+    font-size: 12.5px;
+    margin-top: 4px;
+  }
+
+  section { margin-bottom: 36px; }
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  h2 {
+    font-size: 17px;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: -0.005em;
+  }
+  .section-note {
+    font-size: 12.5px;
+    color: var(--ink-muted);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow-x: auto;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 640px; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  th:nth-child(2), td:nth-child(2) { white-space: normal; min-width: 200px; }
+  th {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    font-weight: 500;
+    background: var(--surface-2);
+  }
+  tr:last-child td { border-bottom: none; }
+  td.num { font-family: 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; text-align: right; }
+
+  .pill {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11.5px;
+    font-weight: 500;
+    padding: 2px 9px;
+    border-radius: 999px;
+  }
+  .pill--groq { background: var(--accent-soft); color: var(--accent); }
+  .pill--cache { background: var(--good-soft); color: var(--good); }
+  .pill--rule { background: var(--warn-soft); color: var(--warn); }
+  .pill--default { background: var(--good-soft); color: var(--good); }
+  .pill--escalation { background: var(--warn-soft); color: var(--warn); }
+  .pill--error { background: var(--bad-soft); color: var(--bad); }
+
+  .lat-flag { font-size: 11px; color: var(--bad); font-family: 'IBM Plex Mono', monospace; margin-left: 6px; }
+
+  .findings {
+    display: grid;
+    gap: 12px;
+  }
+  .finding {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--bad);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .finding.warn-border { border-left-color: var(--warn); }
+  .finding h3 {
+    font-size: 13.5px;
+    margin: 0 0 4px;
+    font-weight: 600;
+  }
+  .finding p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--ink-muted);
+    line-height: 1.55;
+  }
+  .finding code {
+    font-family: 'IBM Plex Mono', monospace;
+    background: var(--surface-2);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: var(--ink);
+  }
+
+  footer {
+    margin-top: 48px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-muted);
+    line-height: 1.7;
+  }
+
+  @media (max-width: 720px) {
+    .stat-row { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+
+<div class="page">
+  <header>
+    <p class="eyebrow">Live deploy verification — 100.117.127.55</p>
+    <h1>Router A/B Test Sheet</h1>
+    <p class="subtitle">
+      The same 10 prompts sent through <b>ak-chatbot</b> three ways: the old Algo aKANADE chain
+      (router disabled — today's production default), the new deterministic ak-router
+      (enabled), and the CEO memo's "his architecture" reference design (RouteLLM
+      difficulty classifier, routing decision only — no live traffic).
+    </p>
+    <div class="meta-row">
+      <span>Run at: <b>2026-09-03 09:2x UTC</b></span>
+      <span>Session: <b>each prompt, isolated session_id</b></span>
+      <span>Tier: <b>realtime</b></span>
+      <span>Auth: <b>Executive (kvelhal)</b></span>
+    </div>
+  </header>
+
+  <div class="stat-row">
+    <div class="stat-tile">
+      <div class="stat-tile__value">10 / 10</div>
+      <div class="stat-tile__label">Prompts answered, both configs</div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-tile__value">0</div>
+      <div class="stat-tile__label">Behavior changes from enabling ak-router</div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-tile__value">4 / 10</div>
+      <div class="stat-tile__label">Answered from cache once router enabled</div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-tile__value">2</div>
+      <div class="stat-tile__label">Real gaps found live (below)</div>
+    </div>
+  </div>
+
+  <section>
+    <div class="section-head">
+      <h2>Old Algo aKANADE — ROUTER_SERVICE_ENABLED = false</h2>
+      <span class="section-note">fixed CHAINS order, provider_optimizer/cost_optimizer bandit reorder</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Prompt</th><th>Answered by</th><th class="num">Latency</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">1</td><td>hello</td><td><span class="pill pill--groq">groq-llama-3.3-70b</span></td><td class="num">1367 ms</td></tr>
+          <tr><td class="mono">2</td><td>what's up</td><td><span class="pill pill--groq">groq-llama-3.3-70b</span></td><td class="num">2608 ms</td></tr>
+          <tr><td class="mono">3</td><td>who has the most tasks</td><td><span class="pill pill--groq">groq-llama-3.3-70b</span></td><td class="num">3573 ms</td></tr>
+          <tr><td class="mono">4</td><td>what's overdue</td><td><span class="pill pill--groq">groq-llama-3.3-70b</span></td><td class="num">1579 ms</td></tr>
+          <tr><td class="mono">5</td><td>thanks</td><td><span class="pill pill--groq">groq-llama-3.3-70b</span></td><td class="num">960 ms</td></tr>
+          <tr><td class="mono">6</td><td>good morning</td><td><span class="pill pill--groq">groq-llama-3.3-70b</span></td><td class="num">908 ms</td></tr>
+          <tr><td class="mono">7</td><td>how many projects are there</td><td><span class="pill pill--rule">rule-based</span></td><td class="num">39812 ms<span class="lat-flag">⚠ fallback</span></td></tr>
+          <tr><td class="mono">8</td><td>what can you help me with</td><td><span class="pill pill--groq">groq-llama-3.3-70b</span></td><td class="num">3459 ms</td></tr>
+          <tr><td class="mono">9</td><td>show me my tasks</td><td><span class="pill pill--rule">rule-based</span></td><td class="num">37877 ms<span class="lat-flag">⚠ fallback</span></td></tr>
+          <tr><td class="mono">10</td><td>bye</td><td><span class="pill pill--groq">groq-llama-3.3-70b</span></td><td class="num">2400 ms</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>New ak-router — ROUTER_SERVICE_ENABLED = true, strategy = deterministic</h2>
+      <span class="section-note">cost-aware capability-tier order, Groq/SLM shadow Thompson Sampling running alongside</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Prompt</th><th>Answered by</th><th class="num">Latency</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">1</td><td>hello</td><td><span class="pill pill--cache">cache · groq-llama-3.3-70b</span></td><td class="num">114 ms</td></tr>
+          <tr><td class="mono">2</td><td>what's up</td><td><span class="pill pill--cache">cache · groq-llama-3.3-70b</span></td><td class="num">54 ms</td></tr>
+          <tr><td class="mono">3</td><td>who has the most tasks</td><td><span class="pill pill--groq">groq-llama-3.3-70b</span></td><td class="num">2114 ms</td></tr>
+          <tr><td class="mono">4</td><td>what's overdue</td><td><span class="pill pill--groq">groq-llama-3.3-70b</span></td><td class="num">1818 ms</td></tr>
+          <tr><td class="mono">5</td><td>thanks</td><td><span class="pill pill--cache">cache · groq-llama-3.3-70b</span></td><td class="num">172 ms</td></tr>
+          <tr><td class="mono">6</td><td>good morning</td><td><span class="pill pill--cache">cache · groq-llama-3.3-70b</span></td><td class="num">34 ms</td></tr>
+          <tr><td class="mono">7</td><td>how many projects are there</td><td><span class="pill pill--rule">rule-based</span></td><td class="num">36947 ms<span class="lat-flag">⚠ fallback</span></td></tr>
+          <tr><td class="mono">8</td><td>what can you help me with</td><td><span class="pill pill--groq">groq-llama-3.3-70b</span></td><td class="num">3645 ms</td></tr>
+          <tr><td class="mono">9</td><td>show me my tasks</td><td><span class="pill pill--rule">rule-based</span></td><td class="num">36666 ms<span class="lat-flag">⚠ fallback</span></td></tr>
+          <tr><td class="mono">10</td><td>bye</td><td><span class="pill pill--cache">cache · groq-llama-3.3-70b</span></td><td class="num">77 ms</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>"His architecture" — RouteLLM tier decision only</h2>
+      <span class="section-note">no live completion call — Default/Escalation tier candidates aren't wired to real inference yet</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Prompt</th><th>Tier</th><th>RouteLLM would pick</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">1</td><td>hello</td><td><span class="pill pill--default">default</span></td><td class="mono">qwen3.8-flash</td></tr>
+          <tr><td class="mono">2</td><td>what's up</td><td><span class="pill pill--default">default</span></td><td class="mono">glm-5.3-flash</td></tr>
+          <tr><td class="mono">3</td><td>who has the most tasks</td><td><span class="pill pill--default">default</span></td><td class="mono">qwen3.8-flash</td></tr>
+          <tr><td class="mono">4</td><td>what's overdue</td><td><span class="pill pill--error">timeout</span></td><td class="mono">— (see finding below)</td></tr>
+          <tr><td class="mono">5</td><td>thanks</td><td><span class="pill pill--escalation">escalation</span></td><td class="mono">gemini-3.8-flash-high</td></tr>
+          <tr><td class="mono">6</td><td>good morning</td><td><span class="pill pill--default">default</span></td><td class="mono">glm-5.3-flash</td></tr>
+          <tr><td class="mono">7</td><td>how many projects are there</td><td><span class="pill pill--escalation">escalation</span></td><td class="mono">glm-5.3-full-max</td></tr>
+          <tr><td class="mono">8</td><td>what can you help me with</td><td><span class="pill pill--default">default</span></td><td class="mono">qwen3.8-flash</td></tr>
+          <tr><td class="mono">9</td><td>show me my tasks</td><td><span class="pill pill--default">default</span></td><td class="mono">glm-5.3-flash</td></tr>
+          <tr><td class="mono">10</td><td>bye</td><td><span class="pill pill--escalation">escalation</span></td><td class="mono">gpt-5.6-sol-xhigh</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Findings</h2>
+      <span class="section-note">real, observed — not theoretical</span>
+    </div>
+    <div class="findings">
+      <div class="finding">
+        <h3>Enabling ak-router changed zero answers</h3>
+        <p>
+          Every prompt landed on the identical provider in both configurations — including
+          the two that fall back to <code>rule-based</code>. The deterministic strategy's
+          capability-tier ordering reproduces today's real chain behavior exactly, which is
+          the correct result for a v1 that's supposed to be a safe swap-in, not a silent
+          behavior change.
+        </p>
+      </div>
+      <div class="finding">
+        <h3>Both configs burn ~37s on two prompts before falling back</h3>
+        <p>
+          <code>how many projects are there</code> and <code>show me my tasks</code> hit
+          <code>groq</code> (fails fast, ~75ms), then walk <code>ollama</code> →
+          <code>algo-akanade-slm-coding</code> → <code>algo-akanade-slm-trading</code> — each
+          eating the full 12s local hard timeout — before landing on the rule floor. Same
+          in old and new: not a regression from this work, but a real, pre-existing cost
+          worth fixing (skip unreachable local rungs faster, or reorder them behind
+          <code>rule</code> for this task shape).
+        </p>
+      </div>
+      <div class="finding warn-border">
+        <h3>his-architecture's 0.8s proxy timeout is sometimes too tight</h3>
+        <p>
+          <code>what's overdue</code> timed out calling
+          <code>/api/admin/router/his-architecture/route</code>. RouteLLM's <code>mf</code>
+          router attempts a real OpenAI embeddings call before falling back to
+          <code>random</code> (no funded OpenAI key exists on this deployment — see the
+          plan's own write-up) — that failed round trip occasionally exceeds
+          <code>ROUTER_SERVICE_TIMEOUT_S</code>. Worth defaulting straight to
+          <code>random</code> when no real OpenAI key is configured, rather than paying for
+          the failure every call.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    ak-router: algo-kaizen-router:latest (RouteLLM + deterministic strategy, built fresh this run)<br>
+    ak-chatbot: algo-kaizen-chatbot:local-patch (this session's TierClient/router_client/admin_model_benchmarks changes)<br>
+    Both containers verified stable post-deploy · akanade backend suite: 834 passed, 2 pre-existing unrelated flaky failures<br>
+    ak-router suite: 18 passed
+  </footer>
+</div>

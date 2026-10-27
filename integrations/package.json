@@ -1,0 +1,12 @@
+{
+  "name": "algo-akanade-integrations",
+  "private": true,
+  "description": "npm workspace root for the ALGO AKANADE integration packages — keeps shared devDependencies (react, react-test-renderer, typescript) hoisted to one copy so packages depending on each other (e.g. algo-akanade-react depending on algo-akanade-react-core) don't end up with two live React instances.",
+  "workspaces": [
+    "algo-akanade-connector",
+    "algo-akanade-voice",
+    "algo-akanade-react-core",
+    "algo-akanade-react",
+    "tally-connector"
+  ]
+}

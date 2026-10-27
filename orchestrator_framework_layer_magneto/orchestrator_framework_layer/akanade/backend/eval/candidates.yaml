@@ -1,0 +1,93 @@
+# Candidate Model Layer (§B). Two backends, and — spelled out explicitly
+# via `hosting` below, not just left implicit in which backend a
+# candidate uses — two fundamentally different places the actual
+# inference computation runs:
+#
+#   backend: openrouter -> hosting: cloud
+#       An API call to openrouter.ai. OpenRouter is a ROUTER, not
+#       necessarily the GPU owner — it forwards your request to whichever
+#       upstream provider actually serves that model (the vendor's own
+#       API, or a third-party inference host) using OPENROUTER'S OWN key
+#       with that provider, not yours. The weights and the GPU computation
+#       live entirely outside anything we control; billed per token
+#       (fetched live from OpenRouter's /models endpoint, never hardcoded
+#       here); a winning candidate still has to be self-hosted later via
+#       vLLM/TGI before it's actually "ours" — this is comparison-only,
+#       never the production serving path.
+#
+#   backend: ollama -> hosting: local
+#       An HTTP call to our own ak-ollama container. The GGUF weights sit
+#       in our ak-ollama-models volume, the inference runs on our own
+#       CPU, no third party is ever involved, no per-token bill. Included
+#       as baselines so a nightly PEFT-tuned tag (see
+#       scripts/finetune_local_slm.py) can be A/B'd against the untuned
+#       base model and against the much bigger cloud candidates above,
+#       using this exact same harness.
+#
+# license/vram_gb/param_b are static facts about the model, checked by hand;
+# pricing is NOT hardcoded here — the harness fetches live per-token pricing
+# from OpenRouter's /models endpoint at run time, so this file can't go stale
+# on cost (always $0 for hosting: local — no API, no bill). vram_gb is a
+# rough fp16 estimate (params_b * 2), informational for the VRAM-fit
+# shortlist in §B, not a hosting guarantee.
+
+- id: local-qwen2.5-1.5b
+  backend: ollama
+  hosting: local
+  model: qwen2.5:1.5b
+  base_url: http://localhost:11434/v1
+  license: apache-2.0
+  param_b: 1.5
+  vram_gb: 3
+  notes: currently-deployed baseline (ak-ollama default)
+
+- id: local-qwen2.5-3b
+  backend: ollama
+  hosting: local
+  model: qwen2.5:3b
+  base_url: http://localhost:11434/v1
+  license: apache-2.0
+  param_b: 3
+  vram_gb: 6
+  notes: alternate already-pulled local baseline
+
+- id: openrouter-qwen2.5-7b
+  backend: openrouter
+  hosting: cloud
+  model: qwen/qwen-2.5-7b-instruct
+  license: apache-2.0
+  param_b: 7
+  vram_gb: 14
+
+- id: openrouter-phi-4
+  backend: openrouter
+  hosting: cloud
+  model: microsoft/phi-4
+  license: mit
+  param_b: 14
+  vram_gb: 28
+
+- id: openrouter-llama-3.1-8b
+  backend: openrouter
+  hosting: cloud
+  model: meta-llama/llama-3.1-8b-instruct
+  license: llama-3.1-community
+  param_b: 8
+  vram_gb: 16
+  notes: Meta's community license restricts commercial use above 700M MAU — verify against actual usage before self-hosting (§F manual check).
+
+- id: openrouter-gemma-2-27b
+  backend: openrouter
+  hosting: cloud
+  model: google/gemma-2-27b-it
+  license: gemma
+  param_b: 27
+  vram_gb: 54
+
+- id: openrouter-qwen3-32b
+  backend: openrouter
+  hosting: cloud
+  model: qwen/qwen3-32b
+  license: apache-2.0
+  param_b: 32
+  vram_gb: 64

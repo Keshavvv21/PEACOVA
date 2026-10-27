@@ -1,0 +1,59 @@
+# Algo Akanade — the AI orchestration engine that directs and coordinates agents,
+# models, tools, and workflows — two apps
+# (this deployment's PM-domain widget + its FastAPI backend) + optional
+# AWS-shaped storage.
+#
+#   docker compose up --build            → frontend :8080, backend :8000
+#   docker compose --profile aws up      → + dynamodb-local, backend uses it
+#
+# Frontend (nginx) proxies /api and /ws to the backend service, mirroring
+# the design's EC2 Nginx role (§14). Chroma + local JSON data persist in
+# named volumes, matching "chroma_db/ lives on the same EBS volume".
+
+services:
+  backend:
+    build: ./backend
+    environment:
+      JWT_SECRET: ${JWT_SECRET:-compose-dev-secret}
+      CHAT_AGENT_FRAMEWORK: ${CHAT_AGENT_FRAMEWORK:-langgraph}
+      STORAGE_BACKEND: ${STORAGE_BACKEND:-local}
+      DYNAMO_ENDPOINT: ${DYNAMO_ENDPOINT:-}
+      LUNA_BASE_URL: ${LUNA_BASE_URL:-}
+      LUNA_API_KEY: ${LUNA_API_KEY:-}
+      MAX_BASE_URL: ${MAX_BASE_URL:-}
+      MAX_API_KEY: ${MAX_API_KEY:-}
+      DEEPSEEK_BASE_URL: ${DEEPSEEK_BASE_URL:-}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      ALGO_ENGINE_BASE_URL: ${ALGO_ENGINE_BASE_URL:-}
+    volumes:
+      - appdata:/srv/data
+      - chroma:/srv/chroma_db
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request as u; u.urlopen('http://localhost:8000/api/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  # optional: AWS-shaped session/PM storage for parity with production
+  dynamodb:
+    image: amazon/dynamodb-local:latest
+    profiles: ["aws"]
+    command: "-jar DynamoDBLocal.jar -sharedDb -inMemory"
+    ports:
+      - "8001:8000"
+
+volumes:
+  appdata:
+  chroma:

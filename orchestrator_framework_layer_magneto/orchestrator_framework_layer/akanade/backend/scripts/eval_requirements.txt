@@ -1,0 +1,6 @@
+# Only for scripts/eval/*.py's own venv (deploy/run_eval.sh / nightly_finetune.sh's
+# regression gate) — kept out of the chatbot's main requirements.txt, same reasoning
+# as finetune_requirements.txt: an occasional batch tool, not the serving image.
+pyyaml>=6.0
+requests>=2.31
+jsonschema>=4.20

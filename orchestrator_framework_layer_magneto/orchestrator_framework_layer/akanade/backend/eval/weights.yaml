@@ -1,0 +1,12 @@
+# Category weights for the aggregation layer (scripts/eval/aggregate.py) —
+# agreed BEFORE any scoring run and never re-weighted after the fact per
+# item E in the pipeline diagram. Changing this file is a real decision;
+# do it between runs, not to make a specific run's result look better.
+#
+# Must sum to 1.0 — aggregate.py refuses to run otherwise.
+extraction: 0.10
+classification: 0.10
+structured_output: 0.15
+reasoning: 0.25
+planning: 0.20
+complex_reasoning: 0.20

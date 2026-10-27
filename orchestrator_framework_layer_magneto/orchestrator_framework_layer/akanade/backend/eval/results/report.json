@@ -1,0 +1,128 @@
+{
+  "local-qwen2.5-1.5b": {
+    "by_category": {
+      "extraction": 0.0,
+      "classification": 0.0,
+      "structured_output": 0.0,
+      "reasoning": 0.0,
+      "planning": 0.0,
+      "complex_reasoning": 0.0
+    },
+    "weighted_score": 0.0,
+    "latency_p50_s": 0.0,
+    "latency_p95_s": 0.0,
+    "cost_per_1k_requests_usd": 0.0,
+    "n_items": 32,
+    "n_errors": 32,
+    "n_human_reviewed": 0,
+    "n_mock_judged": 0
+  },
+  "local-qwen2.5-3b": {
+    "by_category": {
+      "extraction": 0.0,
+      "classification": 0.0,
+      "structured_output": 0.0,
+      "reasoning": 0.0,
+      "planning": 0.0,
+      "complex_reasoning": 0.0
+    },
+    "weighted_score": 0.0,
+    "latency_p50_s": 0.0,
+    "latency_p95_s": 0.0,
+    "cost_per_1k_requests_usd": 0.0,
+    "n_items": 32,
+    "n_errors": 32,
+    "n_human_reviewed": 0,
+    "n_mock_judged": 0
+  },
+  "openrouter-qwen2.5-7b": {
+    "by_category": {
+      "extraction": 0.0,
+      "classification": 0.0,
+      "structured_output": 0.0,
+      "reasoning": 0.0,
+      "planning": 0.0,
+      "complex_reasoning": 0.0
+    },
+    "weighted_score": 0.0,
+    "latency_p50_s": 0.0,
+    "latency_p95_s": 0.0,
+    "cost_per_1k_requests_usd": 0.0,
+    "n_items": 32,
+    "n_errors": 32,
+    "n_human_reviewed": 0,
+    "n_mock_judged": 0
+  },
+  "openrouter-phi-4": {
+    "by_category": {
+      "extraction": 0.0,
+      "classification": 0.0,
+      "structured_output": 0.0,
+      "reasoning": 0.0,
+      "planning": 0.0,
+      "complex_reasoning": 0.0
+    },
+    "weighted_score": 0.0,
+    "latency_p50_s": 0.0,
+    "latency_p95_s": 0.0,
+    "cost_per_1k_requests_usd": 0.0,
+    "n_items": 32,
+    "n_errors": 32,
+    "n_human_reviewed": 0,
+    "n_mock_judged": 0
+  },
+  "openrouter-llama-3.1-8b": {
+    "by_category": {
+      "extraction": 0.0,
+      "classification": 0.0,
+      "structured_output": 0.0,
+      "reasoning": 0.0,
+      "planning": 0.0,
+      "complex_reasoning": 0.0
+    },
+    "weighted_score": 0.0,
+    "latency_p50_s": 0.0,
+    "latency_p95_s": 0.0,
+    "cost_per_1k_requests_usd": 0.0,
+    "n_items": 32,
+    "n_errors": 32,
+    "n_human_reviewed": 0,
+    "n_mock_judged": 0
+  },
+  "openrouter-gemma-2-27b": {
+    "by_category": {
+      "extraction": 0.0,
+      "classification": 0.0,
+      "structured_output": 0.0,
+      "reasoning": 0.0,
+      "planning": 0.0,
+      "complex_reasoning": 0.0
+    },
+    "weighted_score": 0.0,
+    "latency_p50_s": 0.0,
+    "latency_p95_s": 0.0,
+    "cost_per_1k_requests_usd": 0.0,
+    "n_items": 32,
+    "n_errors": 32,
+    "n_human_reviewed": 0,
+    "n_mock_judged": 0
+  },
+  "openrouter-qwen3-32b": {
+    "by_category": {
+      "extraction": 0.0,
+      "classification": 0.0,
+      "structured_output": 0.0,
+      "reasoning": 0.0,
+      "planning": 0.0,
+      "complex_reasoning": 0.0
+    },
+    "weighted_score": 0.0,
+    "latency_p50_s": 0.0,
+    "latency_p95_s": 0.0,
+    "cost_per_1k_requests_usd": 0.0,
+    "n_items": 32,
+    "n_errors": 32,
+    "n_human_reviewed": 0,
+    "n_mock_judged": 0
+  }
+}

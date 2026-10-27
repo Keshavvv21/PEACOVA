@@ -1,0 +1,19 @@
+[#Menu: Gateway of Tally]
+    Add : Item : Before : @@LocalPriceListIniItem : Ask Algo AI
+
+[Menu: Ask Algo AI]
+    Add : Item : Ask about ledgers : Call : AlgoAI Ask Ledgers
+
+[Function: AlgoAI Ask Ledgers]
+    ; Sends the current company name to the local bridge server
+    ; (src/cli.ts / algo-tally-bridge, expected on http://localhost:4600 —
+    ; see ../README.md for how to run it) and shows the reply in a
+    ; simple message box. TDL's own HTTP Post action is a real, built-in
+    ; capability since Tally.ERP 9 Series 6.x — this is not a
+    ; third-party plugin mechanism, it's Tally calling out on its own.
+    00 : HTTP Post  : "http://localhost:4600/analyze-ledgers" : $$AlgoAIRequestBody : $$AlgoAIReplyText : "application/json"
+    10 : Log        : $$AlgoAIReplyText
+    20 : Message Box : $$AlgoAIReplyText
+
+[System: Formula]
+    AlgoAIRequestBody : "{""companyName"":""" + $$CurrentCompany + """,""question"":""Summarize the ledgers with the largest negative closing balances and flag anything unusual.""}"

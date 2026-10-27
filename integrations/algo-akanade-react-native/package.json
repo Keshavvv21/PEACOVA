@@ -1,0 +1,15 @@
+{
+  "name": "algo-akanade-react-native",
+  "version": "0.1.0",
+  "description": "A ready-made <AkanadeChatWidget> for any React Native app, built on the same algo-akanade-react-core hook the web widget uses, plus an optional voice adapter from algo-akanade-voice. Ships as raw .tsx source (no build step) — Metro (React Native's bundler) transpiles local/workspace TypeScript packages directly, the same way it transpiles your own app code.",
+  "license": "UNLICENSED",
+  "main": "src/AkanadeChatWidget.tsx",
+  "types": "src/AkanadeChatWidget.tsx",
+  "peerDependencies": {
+    "react": ">=17.0.0",
+    "react-native": ">=0.70.0"
+  },
+  "dependencies": {
+    "algo-akanade-react-core": "file:../algo-akanade-react-core"
+  }
+}

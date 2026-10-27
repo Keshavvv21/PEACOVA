@@ -1,0 +1,9 @@
+README.md
+pyproject.toml
+gmaofn_client/__init__.py
+gmaofn_client/client.py
+gmaofn_client.egg-info/PKG-INFO
+gmaofn_client.egg-info/SOURCES.txt
+gmaofn_client.egg-info/dependency_links.txt
+gmaofn_client.egg-info/requires.txt
+gmaofn_client.egg-info/top_level.txt

@@ -1,0 +1,17 @@
+# Only for scripts/finetune_local_slm.py's own venv (deploy/nightly_finetune.sh) —
+# deliberately kept out of the chatbot's main requirements.txt; torch/transformers
+# alone are gigabytes and have no place in the always-running serving image.
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch>=2.2
+transformers>=4.40
+peft>=0.10
+datasets>=2.18
+accelerate>=0.30
+
+# Optional — only needed for --qlora, and only does anything useful with a
+# real CUDA GPU (its 4-bit kernels don't run on CPU, unlike everything
+# above). Not installed by default: the --extra-index-url CPU wheel above
+# is this file's whole point, and bitsandbytes pulls in CUDA-linked
+# binaries that don't belong in that default path. Uncomment + install
+# separately on a GPU box that wants --qlora:
+# bitsandbytes>=0.43

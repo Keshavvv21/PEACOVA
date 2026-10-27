@@ -1,0 +1,443 @@
+# Test Asset Layer (§A) — versioned gold-answer + rubric set for the
+# candidate-selection pipeline (scripts/eval/harness.py). Six categories,
+# matching the two scoring lanes in scripts/eval/harness.py:
+#   deterministic (exact/regex/schema) — extraction, classification, structured_output
+#   llm_judge (Claude-as-referee, or human spot-check)  — reasoning, planning, complex_reasoning
+#
+# Starter set: 32 items (not the diagram's ~100x2 target) — real,
+# hand-written, grounded in this app's actual PM-assistant domain, not
+# placeholder filler. Expand toward 100 by adding more items in the same
+# shape; nothing downstream (harness/aggregate/decide) assumes a fixed count.
+#
+# Every item is self-contained (context inlined in the prompt) — these
+# measure a CANDIDATE MODEL's raw reasoning/extraction quality on
+# PM-shaped tasks, not this app's live tool-calling integration (that's
+# covered by tests/test_agent_flows.py instead).
+
+- id: extraction_001
+  category: extraction
+  scoring_type: deterministic
+  match: exact
+  gold_answer: "3"
+  messages:
+    - role: system
+      content: You are a PM assistant. Answer using only the data given. Reply with just the answer, no explanation.
+    - role: user
+      content: "Projects: Alpha (active), Beta (active), Gamma (archived), Delta (active). How many active projects are there?"
+
+- id: extraction_002
+  category: extraction
+  scoring_type: deterministic
+  match: exact
+  gold_answer: "Priya"
+  messages:
+    - role: system
+      content: You are a PM assistant. Answer using only the data given. Reply with just the answer, no explanation.
+    - role: user
+      content: "Tasks - T1: assignee=Raj, due=2026-08-20. T2: assignee=Priya, due=2026-08-18. T3: assignee=Sam, due=2026-08-25. Who has the earliest due date?"
+
+- id: extraction_003
+  category: extraction
+  scoring_type: deterministic
+  match: regex
+  gold_pattern: '(?i)\b5\b'
+  messages:
+    - role: system
+      content: You are a PM assistant. Answer using only the data given. Reply with just the number, no explanation.
+    - role: user
+      content: "Sprint 4 backlog: 5 todo, 2 in-progress, 1 done, 1 blocked. How many tasks are todo?"
+
+- id: extraction_004
+  category: extraction
+  scoring_type: deterministic
+  match: exact
+  gold_answer: "2026-09-01"
+  messages:
+    - role: system
+      content: You are a PM assistant. Answer using only the data given. Reply with just the date in YYYY-MM-DD format, no explanation.
+    - role: user
+      content: "Project Alpha started 2026-07-01 and runs for 2 months. What is the end date?"
+
+- id: extraction_005
+  category: extraction
+  scoring_type: deterministic
+  match: exact
+  gold_answer: "Beta"
+  messages:
+    - role: system
+      content: You are a PM assistant. Answer using only the data given. Reply with just the project name, no explanation.
+    - role: user
+      content: "Alpha: 4 open tasks. Beta: 9 open tasks. Gamma: 2 open tasks. Which project has the most open tasks?"
+
+- id: extraction_006
+  category: extraction
+  scoring_type: deterministic
+  match: exact
+  gold_answer: "12"
+  messages:
+    - role: system
+      content: You are a PM assistant. Answer using only the data given. Reply with just the number, no explanation.
+    - role: user
+      content: "Project Alpha has 5 tasks, Beta has 4 tasks, Gamma has 3 tasks. What is the total task count across all three projects?"
+
+- id: classification_001
+  category: classification
+  scoring_type: deterministic
+  match: exact
+  gold_answer: "High"
+  messages:
+    - role: system
+      content: You are a PM assistant. Classify the task's priority as Low, Medium, or High based on the description. Reply with just the label.
+    - role: user
+      content: "Task: 'Production login endpoint returning 500 for all users since this morning, blocking the entire customer base.'"
+
+- id: classification_002
+  category: classification
+  scoring_type: deterministic
+  match: exact
+  gold_answer: "Low"
+  messages:
+    - role: system
+      content: You are a PM assistant. Classify the task's priority as Low, Medium, or High based on the description. Reply with just the label.
+    - role: user
+      content: "Task: 'Consider renaming the internal debug log tag from DBG to DEBUG for consistency, no user-facing impact, no deadline.'"
+
+- id: classification_003
+  category: classification
+  scoring_type: deterministic
+  match: exact
+  gold_answer: "Blocked"
+  messages:
+    - role: system
+      content: You are a PM assistant. Classify the task's status as Todo, In Progress, Done, or Blocked. Reply with just the label.
+    - role: user
+      content: "Task: 'Waiting on the design team to hand off final mockups before this can be implemented; no work has started.'"
+
+- id: classification_004
+  category: classification
+  scoring_type: deterministic
+  match: exact
+  gold_answer: "Bug"
+  messages:
+    - role: system
+      content: You are a PM assistant. Classify the ticket as Bug, Feature, or Chore. Reply with just the label.
+    - role: user
+      content: "Ticket: 'Clicking Save on the profile page discards the uploaded avatar image instead of keeping it.'"
+
+- id: classification_005
+  category: classification
+  scoring_type: deterministic
+  match: exact
+  gold_answer: "Feature"
+  messages:
+    - role: system
+      content: You are a PM assistant. Classify the ticket as Bug, Feature, or Chore. Reply with just the label.
+    - role: user
+      content: "Ticket: 'Add a dark mode toggle to the settings page, no existing behavior changes.'"
+
+- id: classification_006
+  category: classification
+  scoring_type: deterministic
+  match: exact
+  gold_answer: "Chore"
+  messages:
+    - role: system
+      content: You are a PM assistant. Classify the ticket as Bug, Feature, or Chore. Reply with just the label.
+    - role: user
+      content: "Ticket: 'Upgrade the CI runner's Node version and bump lockfile dependencies, no behavior change.'"
+
+- id: structured_output_001
+  category: structured_output
+  scoring_type: deterministic
+  match: schema
+  gold_schema:
+    type: object
+    required: [project, open_tasks, status]
+    properties:
+      project: {type: string}
+      open_tasks: {type: integer}
+      status: {type: string, enum: [on_track, at_risk, off_track]}
+  messages:
+    - role: system
+      content: 'You are a PM assistant. Reply with ONLY valid JSON, no markdown fences, no explanation, matching this shape - {"project": string, "open_tasks": integer, "status": "on_track"|"at_risk"|"off_track"}.'
+    - role: user
+      content: "Project Gamma has 2 open tasks out of 20, sprint ends in 3 days, team says it's basically done. Summarize as JSON."
+
+- id: structured_output_002
+  category: structured_output
+  scoring_type: deterministic
+  match: schema
+  gold_schema:
+    type: object
+    required: [assignee, due_date, priority]
+    properties:
+      assignee: {type: string}
+      due_date: {type: string}
+      priority: {type: string, enum: [Low, Medium, High]}
+  messages:
+    - role: system
+      content: 'You are a PM assistant. Reply with ONLY valid JSON, no markdown fences, no explanation, matching this shape - {"assignee": string, "due_date": "YYYY-MM-DD", "priority": "Low"|"Medium"|"High"}.'
+    - role: user
+      content: "Task assigned to Sam, due next Friday which is 2026-08-28, description says it's blocking a client launch. Extract as JSON."
+
+- id: structured_output_003
+  category: structured_output
+  scoring_type: deterministic
+  match: schema
+  gold_schema:
+    type: object
+    required: [tasks]
+    properties:
+      tasks:
+        type: array
+        items:
+          type: object
+          required: [id, status]
+          properties:
+            id: {type: string}
+            status: {type: string, enum: [todo, in_progress, done, blocked]}
+  messages:
+    - role: system
+      content: 'You are a PM assistant. Reply with ONLY valid JSON, no markdown fences, no explanation, matching this shape - {"tasks": [{"id": string, "status": "todo"|"in_progress"|"done"|"blocked"}]}.'
+    - role: user
+      content: "T1 is done. T2 hasn't been started. T3 is actively being worked on. T4 is stuck waiting on a dependency. Extract as JSON."
+
+- id: structured_output_004
+  category: structured_output
+  scoring_type: deterministic
+  match: schema
+  gold_schema:
+    type: object
+    required: [sprint, velocity]
+    properties:
+      sprint: {type: integer}
+      velocity: {type: number}
+  messages:
+    - role: system
+      content: 'You are a PM assistant. Reply with ONLY valid JSON, no markdown fences, no explanation, matching this shape - {"sprint": integer, "velocity": number}.'
+    - role: user
+      content: "Sprint 7 completed 34 story points across 2 weeks. Extract sprint number and velocity (points per week) as JSON."
+
+- id: reasoning_001
+  category: reasoning
+  scoring_type: llm_judge
+  gold_answer: "Task T2 is blocked because it depends on T1, which is not yet done — dependencies must complete before dependent tasks can start."
+  rubric: |
+    1.0 if the answer correctly identifies T2 is blocked BECAUSE T1 (its dependency) isn't done, and states the dependency relationship explicitly.
+    0.5 if it correctly says T2 is blocked but doesn't explain the dependency reasoning.
+    0.0 if it says T2 is not blocked, or gives an unrelated/incorrect reason.
+  messages:
+    - role: system
+      content: You are a PM assistant. Explain your reasoning briefly.
+    - role: user
+      content: "T1 (status: in_progress) must complete before T2 can start (T2 depends on T1). T2's status is currently 'todo'. Is T2 blocked? Why or why not?"
+
+- id: reasoning_002
+  category: reasoning
+  scoring_type: llm_judge
+  gold_answer: "The sprint is at risk — at the current pace (2 points/day average), the remaining 20 points need 10 more days, but only 4 remain."
+  rubric: |
+    1.0 if the answer correctly computes that the remaining work (20 points at ~2/day = 10 days) exceeds the 4 days left, and concludes the sprint is at risk/will miss the deadline.
+    0.5 if it identifies a shortfall but the math or conclusion is off.
+    0.0 if it concludes the sprint is on track or doesn't attempt the calculation.
+  messages:
+    - role: system
+      content: You are a PM assistant. Show your reasoning briefly.
+    - role: user
+      content: "Sprint has 4 days left. 20 story points remain. The team has completed 30 points in the first 15 days (avg 2 points/day). Will they finish on time?"
+
+- id: reasoning_003
+  category: reasoning
+  scoring_type: llm_judge
+  gold_answer: "Reassign to whoever has the fewest open tasks and relevant skills, or split the work, since Raj is already overloaded relative to the team."
+  rubric: |
+    1.0 if the answer recommends NOT assigning the new urgent task to Raj (since he already has the most open work), and suggests an alternative (another teammate, or splitting/deferring).
+    0.5 if it flags Raj's overload but still assigns to him without justification, or gives a vague answer.
+    0.0 if it recommends assigning to Raj without noting the imbalance.
+  messages:
+    - role: system
+      content: You are a PM assistant. Recommend an assignee and explain briefly.
+    - role: user
+      content: "Raj has 9 open tasks, Priya has 2, Sam has 4. A new urgent bug just came in with no clear owner. Who should it go to, and why?"
+
+- id: reasoning_004
+  category: reasoning
+  scoring_type: llm_judge
+  gold_answer: "No — Beta cannot start until Alpha finishes (Alpha ends 2026-09-15, Beta was meant to start 2026-09-01), there's a 2-week overlap conflict."
+  rubric: |
+    1.0 if the answer correctly identifies the date conflict (Beta's planned start of 2026-09-01 falls before Alpha's end of 2026-09-15) and flags it as a scheduling problem.
+    0.5 if it notices something's off but miscalculates the overlap or doesn't clearly flag the conflict.
+    0.0 if it says there's no conflict or ignores the dates entirely.
+  messages:
+    - role: system
+      content: You are a PM assistant. Answer with reasoning.
+    - role: user
+      content: "Project Alpha runs 2026-07-01 to 2026-09-15, using the whole team. Project Beta is planned to start 2026-09-01 using the same team. Is this schedule feasible?"
+
+- id: reasoning_005
+  category: reasoning
+  scoring_type: llm_judge
+  gold_answer: "The estimate is likely too optimistic — 3 tasks flagged 'complex' averaging 5 days elsewhere would suggest more than 2 days each here without justification."
+  rubric: |
+    1.0 if the answer flags the estimate as likely too low/optimistic given the task is marked 'complex' and similar complex tasks have historically taken longer, and gives a reason.
+    0.5 if it raises a mild concern without connecting it to the historical complex-task data.
+    0.0 if it accepts the estimate at face value with no scrutiny.
+  messages:
+    - role: system
+      content: You are a PM assistant. Give your assessment with reasoning.
+    - role: user
+      content: "A task is marked complexity=complex and estimated at 2 days. The last 3 tasks marked complexity=complex took 6, 4, and 5 days respectively. Is the 2-day estimate reasonable?"
+
+- id: reasoning_006
+  category: reasoning
+  scoring_type: llm_judge
+  gold_answer: "Yes, this is scope creep — the original 3 acceptance criteria didn't include export functionality, and adding it mid-sprint without re-estimating risks the deadline."
+  rubric: |
+    1.0 if the answer identifies this as scope creep (new requirement not in original acceptance criteria) and notes the risk of adding it without re-estimating/replanning.
+    0.5 if it notices the addition is new but doesn't call out the risk or use the concept of scope creep.
+    0.0 if it treats the addition as routine/no issue.
+  messages:
+    - role: system
+      content: You are a PM assistant. Give your assessment with reasoning.
+    - role: user
+      content: "A task's original 3 acceptance criteria covered CSV import only. Midway through the sprint, the client asked to also add CSV export to the same task, same deadline, no re-estimation done. Any concerns?"
+
+- id: planning_001
+  category: planning
+  scoring_type: llm_judge
+  gold_answer: "Order: design mockups first, then backend API, then frontend integration (frontend depends on the API contract, which depends on the design)."
+  rubric: |
+    1.0 if the plan orders the 3 tasks respecting the dependency chain (design -> backend API -> frontend integration) and states the reasoning.
+    0.5 if the order is correct but unexplained, or explained but the order has one swap.
+    0.0 if the order ignores the dependencies (e.g. frontend before backend).
+  messages:
+    - role: system
+      content: You are a PM assistant. Propose a task order with brief reasoning.
+    - role: user
+      content: "3 tasks for a new feature: (1) build frontend integration, (2) design mockups, (3) build backend API. Frontend needs the API contract; the API design follows the mockups. What order should the team tackle these in?"
+
+- id: planning_002
+  category: planning
+  scoring_type: llm_judge
+  gold_answer: "Split across the sprint boundary or descope non-essential parts — 13 points won't fit in 4 remaining points of capacity; recommend moving it to next sprint or reducing scope."
+  rubric: |
+    1.0 if the plan recognizes the task (13 points) doesn't fit the remaining capacity (4 points) and proposes a concrete resolution (defer to next sprint, split, or descope).
+    0.5 if it notices the mismatch but proposes an unrealistic fix (e.g. "just work overtime").
+    0.0 if it assumes the task fits without checking capacity.
+  messages:
+    - role: system
+      content: You are a PM assistant. Propose how to handle this with brief reasoning.
+    - role: user
+      content: "Sprint has 4 story points of capacity left. A newly-requested task is estimated at 13 points and the client wants it this sprint. How should this be handled?"
+
+- id: planning_003
+  category: planning
+  scoring_type: llm_judge
+  gold_answer: "Assign the 2 unblocked, ready tasks to available team members now; hold the 3rd until its dependency clears, and don't let it sit idle once unblocked."
+  rubric: |
+    1.0 if the plan correctly separates the 2 ready tasks (assign now) from the 1 blocked task (hold, revisit once unblocked) and gives a concrete next action.
+    0.5 if it identifies the blocked task but proposes starting all 3 anyway, or is vague about next steps.
+    0.0 if it doesn't distinguish blocked from ready tasks.
+  messages:
+    - role: system
+      content: You are a PM assistant. Propose a plan with brief reasoning.
+    - role: user
+      content: "3 tasks need doing this week: Task A (ready, no blockers), Task B (ready, no blockers), Task C (blocked on an external vendor response, ETA unknown). Team has capacity for 2 tasks right now. What's the plan?"
+
+- id: planning_004
+  category: planning
+  scoring_type: llm_judge
+  gold_answer: "Prioritize the security fix first (production risk), then the client-requested feature (revenue/relationship risk), then the internal tooling improvement last (no external deadline)."
+  rubric: |
+    1.0 if the plan orders by urgency/risk - security issue first, client feature second, internal tooling last - with reasoning tied to impact/deadline.
+    0.5 if the order is reasonable but the reasoning is thin or one item is misplaced.
+    0.0 if internal tooling or a low-urgency item is placed first with no justification.
+  messages:
+    - role: system
+      content: You are a PM assistant. Propose a priority order with brief reasoning.
+    - role: user
+      content: "3 competing asks this week: (1) a minor internal tooling improvement, no deadline, (2) a security vulnerability found in the auth flow, no active exploit known yet, (3) a feature a paying client is expecting by Friday. How should the team prioritize?"
+
+- id: planning_005
+  category: planning
+  scoring_type: llm_judge
+  gold_answer: "Reduce scope or extend the deadline — 3 remaining features at 4 days each (12 days) can't fit in 5 remaining days even split across 2 people (would need ~6 days minimum in parallel), recommend cutting to 2 features or negotiating more time."
+  rubric: |
+    1.0 if the plan does the capacity math (12 person-days of work, 5 days left, 2 people = 10 person-days available) and correctly concludes it doesn't fit, proposing either scope cut or deadline extension.
+    0.5 if it notices a shortfall but the math is off or the proposed fix is vague.
+    0.0 if it assumes the plan fits without checking capacity math.
+  messages:
+    - role: system
+      content: You are a PM assistant. Assess feasibility and propose a plan with reasoning.
+    - role: user
+      content: "3 features remain, each estimated at 4 days of work for one person. 2 developers are available. 5 days remain until the deadline. Is this achievable, and if not, what should change?"
+
+- id: complex_reasoning_001
+  category: complex_reasoning
+  scoring_type: llm_judge
+  gold_answer: "The root cause is likely the new caching layer added last sprint — it's the one common change across all 3 affected services, and the timing (issue started right after deploy) points to it rather than the unrelated database upgrade or the frontend change."
+  rubric: |
+    1.0 if the answer identifies the caching layer as the likely root cause, reasoning from BOTH the timing correlation AND it being the only change common to all 3 affected services (ruling out the DB upgrade and frontend change as less likely).
+    0.5 if it picks the right cause but only uses one piece of evidence (timing OR commonality, not both), or considers the wrong cause but with some valid reasoning.
+    0.0 if it picks an unrelated cause or doesn't engage with the evidence.
+  messages:
+    - role: system
+      content: You are a PM assistant helping debug a cross-team incident. Reason through the evidence explicitly.
+    - role: user
+      content: "3 services (Auth, Billing, Search) all started showing intermittent 500 errors starting Monday morning. Changes deployed last sprint: (1) a new shared caching layer used by Auth, Billing, and Search, (2) a database upgrade used only by the Reporting service, (3) a frontend UI change unrelated to any backend service. What's the most likely root cause, and why?"
+
+- id: complex_reasoning_002
+  category: complex_reasoning
+  scoring_type: llm_judge
+  gold_answer: "Descope the export feature (least customer-visible, most isolated) rather than the API rate-limiting (compliance-driven, hard deadline) or the mobile push notifications (already promised to a specific enterprise client) — export has no hard external commitment."
+  rubric: |
+    1.0 if the answer correctly identifies the export feature as the one to cut, reasoning explicitly through the OTHER two features' hard constraints (compliance deadline, specific client promise) as the reason they can't be cut instead.
+    0.5 if it picks the right feature to cut but doesn't explain why the other two are protected, or partially explains it.
+    0.0 if it recommends cutting a feature with a hard external commitment (rate-limiting or push notifications) instead.
+  messages:
+    - role: system
+      content: You are a PM assistant making a scope-cut recommendation under a hard deadline. Reason through the tradeoffs explicitly.
+    - role: user
+      content: "The team must cut one of 3 remaining features to hit a hard deadline: (1) CSV export for reports, no customer has asked for it yet, (2) API rate-limiting, required by a signed compliance agreement due this exact date, (3) mobile push notifications, already promised by name to one enterprise client for this release. Which should be cut, and why?"
+
+- id: complex_reasoning_003
+  category: complex_reasoning
+  scoring_type: llm_judge
+  gold_answer: "Keep the two teams on separate sub-tasks with a clearly defined integration point (shared interface/contract agreed upfront) rather than merging them fully or running them fully independently — this avoids both duplicated work and integration-day surprises."
+  rubric: |
+    1.0 if the answer proposes defining a clear interface/contract upfront between the two teams' sub-tasks as the way to avoid both duplicated effort and late integration surprises, engaging with both failure modes explicitly.
+    0.5 if it proposes coordination in general terms without the specific "define the interface upfront" mechanism, or only addresses one of the two failure modes.
+    0.0 if it recommends either full merge or fully independent work with no coordination mechanism.
+  messages:
+    - role: system
+      content: You are a PM assistant advising on team structure for a feature that spans two teams' components. Reason through the tradeoffs.
+    - role: user
+      content: "Two teams (Backend, Mobile) both need to build parts of the same feature, working somewhat independently due to different skillsets, but their pieces must integrate before launch. Historically, integrating late has caused surprises; merging teams fully has caused duplicated effort. How should this be structured?"
+
+- id: complex_reasoning_004
+  category: complex_reasoning
+  scoring_type: llm_judge
+  gold_answer: "The team should renegotiate scope with the client rather than silently cutting QA time or working unsustainable overtime — both of those trade a visible short-term win for a larger, harder-to-reverse cost (bugs in production, burnout/attrition)."
+  rubric: |
+    1.0 if the answer recommends renegotiating scope/deadline over the other two options, explicitly reasoning that cutting QA and forcing overtime both create larger deferred costs (production bugs, burnout) that outweigh the short-term deadline pressure.
+    0.5 if it picks renegotiation but with weak reasoning, or picks a reasonable option with partial reasoning about tradeoffs.
+    0.0 if it recommends cutting QA or forcing sustained overtime with no discussion of the downstream cost.
+  messages:
+    - role: system
+      content: You are a PM assistant advising leadership on a deadline crunch. Reason through the tradeoffs of the 3 options explicitly.
+    - role: user
+      content: "A project is 2 weeks behind with a fixed launch date. Three options on the table: (1) cut QA testing time in half, (2) require the team to work unpaid overtime for 3 weeks, (3) go back to the client and renegotiate scope or deadline. Which is the best path, and why?"
+
+- id: complex_reasoning_005
+  category: complex_reasoning
+  scoring_type: llm_judge
+  gold_answer: "The metric (tickets closed) is likely being gamed by closing easy/low-value tickets first while hard, high-value bugs pile up — a better metric would weight by severity/complexity or track cycle time on high-severity items specifically, not raw count."
+  rubric: |
+    1.0 if the answer identifies the risk of the raw-count metric incentivizing closing easy tickets over important ones, AND proposes a concrete better metric (e.g. severity-weighted count, cycle time on high-severity items).
+    0.5 if it identifies the gaming risk but doesn't propose a concrete alternative metric, or vice versa.
+    0.0 if it treats the raw ticket-count metric as fine with no concern raised.
+  messages:
+    - role: system
+      content: You are a PM assistant reviewing how a team's performance is being measured. Reason through the incentive effects.
+    - role: user
+      content: "A team is evaluated on 'tickets closed per week' as its main productivity metric. After 2 months, ticket count is up 40%, but customer complaints about unresolved critical bugs have also risen. What might be happening, and how would you fix the metric?"

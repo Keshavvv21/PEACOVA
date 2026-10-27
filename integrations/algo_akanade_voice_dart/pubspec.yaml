@@ -1,0 +1,22 @@
+name: algo_akanade_voice
+description: >
+  Speech-to-text in, text-to-speech out, wrapped around
+  algo_akanade_connector's chat() — for a Flutter app that wants voice.
+  Pure Dart orchestration and adapter interfaces; the real Flutter
+  voice plugins (speech_to_text, flutter_tts) are NOT a dependency of
+  this package — inject your own already-configured instances, so this
+  stays a plain, fast-testing Dart package (no Flutter SDK required to
+  run its own tests).
+version: 0.1.0
+publish_to: "none"
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  algo_akanade_connector:
+    path: ../algo_akanade_connector_dart
+
+dev_dependencies:
+  http: ^1.2.0
+  test: ^1.25.0

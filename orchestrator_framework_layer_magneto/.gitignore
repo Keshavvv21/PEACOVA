@@ -1,0 +1,28 @@
+# Dependencies, build output and local runtime state — rebuildable or private,
+# never committed (this is what made the folder 8.8 GB on disk).
+.venv/
+venv/
+node_modules/
+__pycache__/
+*.pyc
+.pytest_cache/
+dist/
+build/
+chroma_db/
+chroma*/
+backend/data/
+**/backend/data/
+**/scripts/quickstart_lora_example/data/
+*.sqlite
+*.db
+
+# Secrets: real env files stay local; *.env.example files are committed.
+.env
+*.env
+!*.env.example
+*.pem
+*.key
+
+# Mobile build artifacts
+*.apk
+*.aab

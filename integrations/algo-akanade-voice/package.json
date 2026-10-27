@@ -1,0 +1,19 @@
+{
+  "name": "algo-akanade-voice",
+  "version": "0.1.0",
+  "description": "Voice (speech-to-text in, text-to-speech out) wrapped around @algo-akanade/connector's chat() — for React Native apps and websites that want the same voice experience the Flutter mobile app already has.",
+  "license": "UNLICENSED",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "npm run build && node --test dist/test/"
+  },
+  "dependencies": {
+    "@algo-akanade/connector": "file:../algo-akanade-connector"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.4.5"
+  }
+}

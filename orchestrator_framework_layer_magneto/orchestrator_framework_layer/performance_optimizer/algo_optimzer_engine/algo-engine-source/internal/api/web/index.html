@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Algo Engine — Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg:#0d1117; --panel:#161b22; --border:#30363d; --text:#e6edf3;
+    --dim:#8b949e; --accent:#2f81f7; --ok:#3fb950; --warn:#d29922; --hot:#f85149;
+  }
+  * { box-sizing:border-box; margin:0; }
+  body { background:var(--bg); color:var(--text);
+         font:14px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+  header { padding:14px 20px; border-bottom:1px solid var(--border);
+           display:flex; align-items:baseline; gap:12px; }
+  header h1 { font-size:16px; } header .sub { color:var(--dim); font-size:12px; }
+  main { display:grid; grid-template-columns: 1fr 320px; gap:16px;
+         padding:16px 20px; max-width:1100px; margin:0 auto; }
+  @media (max-width:800px){ main{ grid-template-columns:1fr; } }
+  .panel { background:var(--panel); border:1px solid var(--border);
+           border-radius:8px; padding:14px; }
+  .panel h2 { font-size:12px; text-transform:uppercase; letter-spacing:.08em;
+              color:var(--dim); margin-bottom:10px; }
+  #log { height:420px; overflow-y:auto; white-space:pre-wrap; word-break:break-all;
+         background:var(--bg); border:1px solid var(--border); border-radius:6px;
+         padding:10px; margin-bottom:10px; }
+  .you { color:var(--accent); } .bot { color:var(--text); } .meta { color:var(--dim); }
+  form { display:flex; gap:8px; }
+  input[type=text] { flex:1; background:var(--bg); color:var(--text);
+    border:1px solid var(--border); border-radius:6px; padding:8px 10px; font:inherit; }
+  button { background:var(--accent); color:#fff; border:0; border-radius:6px;
+           padding:8px 16px; font:inherit; cursor:pointer; }
+  button:disabled { opacity:.5; cursor:wait; }
+  .stat { display:flex; justify-content:space-between; padding:5px 0;
+          border-bottom:1px dashed var(--border); }
+  .stat:last-child { border:0; }
+  .stat b { font-weight:600; }
+  .bar { height:10px; background:var(--bg); border:1px solid var(--border);
+         border-radius:5px; overflow:hidden; margin:6px 0 2px; }
+  .bar > div { height:100%; background:var(--ok); width:0%; transition:width .4s; }
+  .note { color:var(--dim); font-size:12px; margin-top:10px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>&#128038; algo-engine</h1>
+  <span class="sub" id="model">loading…</span>
+</header>
+<main>
+  <section class="panel">
+    <h2>Chat (streaming)</h2>
+    <div id="log"><span class="meta">Untrained toy weights: replies are structured
+gibberish. The pipeline — routing, tiered streaming, KV cache — is real.
+Watch the tier stats react as you chat. →</span>
+</div>
+    <form id="f">
+      <input id="q" type="text" placeholder="say something…" autocomplete="off">
+      <button id="send" type="submit">send</button>
+    </form>
+  </section>
+  <aside class="panel">
+    <h2>Tiered store — live</h2>
+    <div class="stat"><span>kernel tier</span><b id="kernel">–</b></div>
+    <div class="stat"><span>hit rate</span><b id="hitrate">–</b></div>
+    <div class="bar"><div id="hitbar"></div></div>
+    <div class="stat"><span>resident experts</span><b id="resident">–</b></div>
+    <div class="stat"><span>RAM hits</span><b id="hits">–</b></div>
+    <div class="stat"><span>disk misses</span><b id="misses">–</b></div>
+    <div class="stat"><span>LRU evictions</span><b id="evict">–</b></div>
+    <p class="note">Polled from <code>GET /stats</code> every second.
+    Hit rate climbing across a conversation is the learned cache
+    (LRU&nbsp;+&nbsp;heat-map pins) doing its job — weights streamed
+    just-in-time, live.</p>
+  </aside>
+</main>
+<script>
+const log = document.getElementById('log');
+const q = document.getElementById('q');
+const send = document.getElementById('send');
+const esc = s => s.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+// non-printable bytes -> '.' (same rule as the CLI's printable())
+const printable = s => [...s].map(c => {
+  const b = c.charCodeAt(0);
+  return (b >= 32 && b < 127) || c === '\n' ? c : '.';
+}).join('');
+const append = html => {
+  log.insertAdjacentHTML('beforeend', html);
+  log.scrollTop = log.scrollHeight;
+};
+
+async function refreshStats() {
+  try {
+    const r = await fetch('/stats'); const s = await r.json();
+    document.getElementById('model').textContent =
+      s.model + ' · OpenAI-compatible API on this origin';
+    document.getElementById('kernel').textContent = s.kernel_tier;
+    const pct = Math.round(100 * s.hit_rate);
+    document.getElementById('hitrate').textContent = pct + '%';
+    document.getElementById('hitbar').style.width = pct + '%';
+    document.getElementById('resident').textContent = s.resident_experts;
+    document.getElementById('hits').textContent = s.ram_hits;
+    document.getElementById('misses').textContent = s.disk_misses;
+    document.getElementById('evict').textContent = s.lru_evictions;
+  } catch (e) { /* server restarting; keep polling */ }
+}
+setInterval(refreshStats, 1000); refreshStats();
+
+document.getElementById('f').addEventListener('submit', async ev => {
+  ev.preventDefault();
+  const text = q.value.trim(); if (!text) return;
+  q.value = ''; send.disabled = true;
+  append('\n<span class="you">&rsaquo; ' + esc(text) + '</span>\n<span class="bot">&#9670; </span>');
+  try {
+    const resp = await fetch('/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        messages: [{role: 'user', content: text}],
+        max_tokens: 48, temperature: 0.8, stream: true,
+      }),
+    });
+    // parse the SSE stream: "data: {...}\n\n" frames, final "data: [DONE]"
+    const reader = resp.body.getReader();
+    const dec = new TextDecoder();
+    let buf = '';
+    for (;;) {
+      const {value, done} = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, {stream: true});
+      let i;
+      while ((i = buf.indexOf('\n\n')) >= 0) {
+        const frame = buf.slice(0, i); buf = buf.slice(i + 2);
+        if (!frame.startsWith('data: ')) continue;
+        const payload = frame.slice(6);
+        if (payload === '[DONE]') continue;
+        const delta = JSON.parse(payload).choices?.[0]?.delta?.content;
+        if (delta) append(esc(printable(delta)));
+      }
+    }
+  } catch (e) {
+    append('<span class="meta"> [error: ' + esc(String(e)) + ']</span>');
+  }
+  send.disabled = false; q.focus();
+});
+</script>
+</body>
+</html>

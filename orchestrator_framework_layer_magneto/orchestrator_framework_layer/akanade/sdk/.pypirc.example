@@ -1,0 +1,13 @@
+# Copy to sdk/.pypirc and fill in a real token — that file is gitignored,
+# never committed. Get a token from pypi.org -> Account settings -> API
+# tokens (the first upload of a brand-new project needs an account-scoped
+# token; after that, replace it with one scoped to just this project).
+[pypi]
+username = __token__
+password = pypi-...
+
+# Optional: test.pypi.org first, for a dry run before the real upload —
+# `twine upload --repository testpypi dist/*`
+[testpypi]
+username = __token__
+password = pypi-...

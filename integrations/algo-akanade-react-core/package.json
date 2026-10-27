@@ -1,0 +1,26 @@
+{
+  "name": "algo-akanade-react-core",
+  "version": "0.1.0",
+  "description": "Shared React hook wrapping @algo-akanade/connector's login/chat/confirm lifecycle — message history, send(), confirm(), loading/error state. Uses only the React hooks API, so the exact same code runs under React DOM (websites) and React Native (same underlying 'react' package) — algo-akanade-react and algo-akanade-react-native both render UI on top of this one hook.",
+  "license": "UNLICENSED",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "npm run build && node --test dist/test/"
+  },
+  "peerDependencies": {
+    "react": ">=17.0.0"
+  },
+  "dependencies": {
+    "@algo-akanade/connector": "file:../algo-akanade-connector"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/react": "^18.2.79",
+    "@types/react-test-renderer": "^18.0.7",
+    "react": "^18.2.0",
+    "react-test-renderer": "^18.2.0",
+    "typescript": "^5.4.5"
+  }
+}

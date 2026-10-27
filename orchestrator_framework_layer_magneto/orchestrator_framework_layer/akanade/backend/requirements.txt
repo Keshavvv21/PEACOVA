@@ -1,0 +1,113 @@
+# ── core (always required) ──────────────────────────────────────────────
+fastapi>=0.115
+uvicorn[standard]>=0.30
+pydantic>=2.7
+PyJWT>=2.8
+httpx>=0.27
+networkx>=3.3          # §4 graph retrieval
+rapidfuzz>=3.9         # §6.1 step 7 entity resolution
+python-multipart>=0.0.9
+python-dotenv>=1.0     # loads backend/.env — see config.py's load_dotenv() call
+cryptography>=42       # app/crypto.py — encrypts stored OAuth tokens at rest
+
+# ── Track A: LangGraph (default framework) ──────────────────────────────
+langgraph>=0.2
+langchain-core>=0.3
+
+# ── vector store (§5) ───────────────────────────────────────────────────
+chromadb>=0.5
+
+# ── enterprise data ingestion (document_pipeline.py's _extract_text) ────
+# Real per-page PDF text extraction — pure Python, no system deps (no
+# poppler/ghostscript), small enough to ship by default unlike
+# sentence-transformers below. Without it, a .pdf under RAG_INGEST_DIR is
+# reported as a clear, actionable skip ("pip install pypdf"), same
+# graceful-degrade story as every other optional piece in this file —
+# CSV ingestion needs nothing extra (stdlib csv module).
+pypdf>=4.0
+
+# ── Routing Comparison dashboard's on-demand PDF report (admin_router_config.py) ──
+# Pure-Python wheel, no system/Docker package changes needed (unlike
+# WeasyPrint, which needs cairo/pango at the OS level) — the deliberate
+# reason it was picked for a tabular report inside a container.
+reportlab>=4.0
+
+# ── optional: real MiniLM embeddings (§5) — heavy (pulls torch, ~4-5GB in
+# the image, plus a slow push on a bandwidth-constrained connection).
+# Without it the deterministic hash embedder is used automatically
+# (make_embedder() in retrieval/vectorstore.py falls back on ANY import
+# error here, so this is safe to re-enable later on a faster connection).
+# sentence-transformers>=3.0
+
+# ── optional: local SLM tier via Ollama (llm/README.md) — real LangChain
+# chat model, not another raw-HTTP OpenAICompatible. Without it, or without
+# OLLAMA_BASE_URL set, that rung is just unavailable, same as any other
+# unconfigured provider.
+langchain-ollama>=0.2
+
+# ── optional: LangChain-flavored client for any OpenAI-compatible host,
+# as an alternative to the raw-httpx OpenAICompatible class (EXTRA_LLM_
+# PROVIDERS still uses OpenAICompatible by default — this is for anyone
+# who wants LangChain's retry/streaming/observability on a hosted tier too).
+# langchain-openai>=0.2
+
+# ── optional: Track B (ADK bake-off, §6.4) ──────────────────────────────
+# RouterLlm (agent/adk_agent.py) bridges ADK's own model interface straight
+# to llm/router.py's get_llm_client()/TierClient — the same provider chain
+# every other track uses — so litellm is never actually needed here.
+google-adk>=1.0
+
+# ── optional: Track C (agent/claude_agent.py) ───────────────────────────
+# The real Anthropic Messages API (llm/providers.py's AnthropicNative).
+# Without this installed/CLAUDE_API_KEY set, the "claude" framework option
+# just falls back through get_llm_client's normal chain, same as any other
+# unconfigured rung — see config.py's CLAUDE_API_KEY comment.
+anthropic>=0.40
+
+# ── optional: MCP client integration (agent/mcp_client.py) ──────────────
+# Lets the chatbot consume tools from external MCP servers (config.py's
+# MCP_SERVERS) — merged into agent/tools.py's TOOL_SCHEMAS for every
+# track. Without this installed, MCP tools are just unavailable (an empty
+# list), same "optional, additive" story as every other extension point
+# here (EXTRA_LLM_PROVIDERS, plugins.d/, Ollama).
+# Pinned <2 (not left open-ended) because mcp-server-fetch below
+# hard-requires it — an unpinned mcp>=1.0 resolves to the newest 2.x and
+# silently breaks the bundled utility_server.py's own FastMCP import
+# (mcp.server.mcpserver.MCPServer, the 2.x rename, doesn't exist in 1.x)
+# the moment mcp-server-fetch's own dependency resolution downgrades it
+# back — pin explicitly so `pip install` fails loudly on a real conflict
+# instead of two packages fighting over the same transitive dependency.
+mcp>=1.0,<2
+
+# Anthropic's own reference "fetch" MCP SERVER (a separate package from
+# the `mcp` client library above) — one of config.py's two default
+# MCP_SERVERS entries alongside the bundled offline utility server. Lets
+# the assistant read real web pages: free, open source, no API key, no
+# account. Launched over stdio exactly like the bundled example, just a
+# real external ability instead of a toy one.
+mcp-server-fetch>=0.1
+
+# ── optional: DynamoDB session/PM storage (STORAGE_BACKEND=dynamodb) ────
+# boto3>=1.34
+
+# ── GMAOFN core (app/gmaofn/) — always required ─────────────────────────
+# numpy: the ContextualThompsonRouter's Bayesian linear regression
+# (router.py) — matrix inverse + multivariate-normal sampling per agent
+# per routing decision. Already a transitive dependency of chromadb, but
+# listed explicitly since gmaofn/router.py imports it directly.
+numpy>=1.26
+
+# matplotlib: Trading Agent's equity-curve chart (agent/trading_tools.py)
+# — Agg backend only (matplotlib.use("Agg") set before any pyplot import),
+# no system GUI/display deps needed for a headless server rendering PNGs
+# to bytes.
+matplotlib>=3.8
+
+# ── optional: GMAOFN generic model layer — Hugging Face rung ────────────
+# llm/providers.py's HuggingFaceProvider (real huggingface_hub SDK).
+# Without this installed/HUGGINGFACE_MODEL set, that rung is just
+# unavailable, same as every other unconfigured provider.
+huggingface_hub>=0.26
+
+# ── dev ─────────────────────────────────────────────────────────────────
+pytest>=8.2

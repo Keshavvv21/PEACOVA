@@ -1,0 +1,6 @@
+Metadata-Version: 2.4
+Name: gmaofn-client
+Version: 0.2.0
+Summary: External Python SDK for a deployed MAGNETO chatbot's REST API
+Requires-Python: >=3.9
+Requires-Dist: httpx>=0.27
